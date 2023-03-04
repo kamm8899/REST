@@ -1,10 +1,7 @@
 package edu.stevens.cs548.clinic.domain;
 
-import jakarta.persistence.Convert;
-import jakarta.persistence.Index;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,18 +29,21 @@ import java.util.UUID;
 		query = "delete from Treatment t")
 })
 
-// TODO
-
-@Table(indexes = @Index(columnList="treatmentId"))
+// TODOX
+@Entity
+@Table(indexes = @Index(columnList = "treatmentId"))
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Treatment implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	// TODO PK
+	// TODOX PK
+	@Id
+	@GeneratedValue
 	protected long id;
 	
-	// TODO
-
+	// TODOX
+	@Column(nullable = false, unique = true)
 	protected UUID treatmentId;
 	
 	protected String diagnosis;
@@ -74,9 +74,9 @@ public abstract class Treatment implements Serializable {
 	}
 
 	/*
-	 * TODO
+	 * TODOX
 	 */
-
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	protected Patient patient;
 
 	public Patient getPatient() {
@@ -89,9 +89,9 @@ public abstract class Treatment implements Serializable {
 	}
 
 	/*
-	 * TODO
+	 * TODOX
 	 */
-
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	protected Provider provider;
 
 	public Provider getProvider() {
@@ -103,8 +103,9 @@ public abstract class Treatment implements Serializable {
 	}	
 	
 	/*
-	 * TODO
+	 * TODOX
 	 */
+	@OneToMany(cascade = CascadeType.PERSIST)
 	protected Collection<Treatment> followupTreatments;
 	
 	public void addFollowupTreatment(Treatment t) {
@@ -129,7 +130,8 @@ public abstract class Treatment implements Serializable {
 	public Treatment() {
 		super();
 		/*
-		 * TODO initialize lists
+		 * TODOX initialize lists
 		 */
+		followupTreatments = new ArrayList<Treatment>();
 	}   
 }

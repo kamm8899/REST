@@ -1,6 +1,11 @@
 package edu.stevens.cs548.clinic.rest;
 
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
@@ -15,7 +20,8 @@ import edu.stevens.cs548.clinic.service.IPatientService.PatientServiceExn;
 import edu.stevens.cs548.clinic.service.dto.PatientDto;
 import edu.stevens.cs548.clinic.service.dto.TreatmentDto;
 
-// TODO
+// TODOX
+@Path("/patient")
 public class PatientResource extends ResourceBase {
 	
 	private static final Logger logger = Logger.getLogger(PatientResource.class.getCanonicalName());
@@ -23,13 +29,18 @@ public class PatientResource extends ResourceBase {
 	@Context
 	private UriInfo uriInfo;
 	
-	// TODO
+	// TODOX
+	@Inject
 	private IPatientService patientService;
 	
-	// TODO
+	// TODOX
 	/*
-	 * Return a provider DTO including the list of treatments they are administering.
+	 * Return a
+	 *  provider DTO including the list of treatments they are administering.
 	 */
+	@GET
+	@Path("/{id}")
+	@Produces("application/vnd.patients+json")
 	public Response getPatient(@PathParam("id") String id) {
 		try {
 			UUID patientId = UUID.fromString(id);

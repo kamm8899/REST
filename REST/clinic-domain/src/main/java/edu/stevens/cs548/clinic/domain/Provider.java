@@ -1,11 +1,7 @@
 package edu.stevens.cs548.clinic.domain;
 
-import jakarta.persistence.Convert;
-import jakarta.persistence.Index;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -37,18 +33,20 @@ import edu.stevens.cs548.clinic.domain.ITreatmentDao.TreatmentExn;
 		name = "RemoveAllProviders", 
 		query = "delete from Provider p")
 })
-// TODO
-
-@Table(indexes = @Index(columnList="providerId"))
+// TODOX
+@Entity
+@Table(indexes = @Index(columnList = "providerId"))
 public class Provider implements Serializable, ITreatmentImporter {
 		
 	private static final long serialVersionUID = -876909316791083094L;
 
-	// TODO JPA annotations
+	// TODOX JPA annotations
+	@Id
+	@GeneratedValue
 	private long id;
 	
-	// TODO
-
+	// TODOX
+	@Column(nullable = false, unique = true)
 	private UUID providerId;
 	
 	private String npi;
@@ -87,7 +85,8 @@ public class Provider implements Serializable, ITreatmentImporter {
 		this.name = name;
 	}
 
-	// TODO JPA annotations (propagate deletion of provider to treatments)
+	// TODOX JPA annotations (propagate deletion of provider to treatments)
+	@OneToMany(cascade = CascadeType.PERSIST, mappedBy = "provider")
 	private Collection<Treatment> treatments;
 
 	@Transient
@@ -115,7 +114,7 @@ public class Provider implements Serializable, ITreatmentImporter {
 	}
 	
 	/**
-	 * TODO complete this operation (see patient entity)
+	 * TODOX complete this operation (see patient entity)
 	 *
 	 * Export a treatment without violating Aggregate pattern.
 	 * Check that the exported treatment is a treatment for this provider.
@@ -146,7 +145,7 @@ public class Provider implements Serializable, ITreatmentImporter {
 
 	private void addTreatment (Treatment t) {
 		/*
-		 * TODO complete this operation (see patient entity)
+		 * TODOX complete this operation (see patient entity)
 		 */
 		treatments.add(t);
 		t.setProvider(this);
@@ -192,22 +191,102 @@ public class Provider implements Serializable, ITreatmentImporter {
 
 	@Override
 	public Consumer<Treatment>  importRadiology(UUID tid, Patient patient, Provider provider, String diagnosis, List<LocalDate> dates, Consumer<Treatment> consumer) {
-		// TODO finish this
-		return null;
+		// TODOX finish this
+		RadiologyTreatment treatment = treatmentFactory.createRadiologyTreatment();
+		treatment.setTreatmentId(tid);
+		treatment.setDiagnosis(diagnosis);
+		// add all the dates to the treatment
+		for (int i = 0; i < dates.size(); i++) {
+			treatment.addTreatmentDate(dates.get(i));
+		}
+		// Why don't they have this above?
+		// treatment.setPatient(patient);
+		// treatment.setProvider(provider);
+		/*
+		 * NB for follow-up treatments, this may not be the current provider
+		 */
+		provider.addTreatment(treatment);
+		/*
+		 * NB for follow-up treatments, the patient will always be the same
+		 */
+		patient.addTreatment(treatment);
+		/*
+		 * Add to the database.
+		 */
+		treatmentDao.addTreatment(treatment);
+		/*
+		 * Add to parent follow-up treatments, if appropriate
+		 */
+		if (consumer != null) {
+			consumer.accept(treatment);
+		}
+		/*
+		 * Return our own consumer who will add follow-up treatments
+		 */
+		return (followUp) -> {
+			treatment.addFollowupTreatment(followUp);
+		};
+
 	}
 
 	@Override
 	public Consumer<Treatment> importSurgery(UUID tid, Patient patient, Provider provider, String diagnosis, LocalDate date,
 			String dischargeInstructions, Consumer<Treatment> consumer) {
-		// TODO finish this
-		return null;
+		// TODOX finish this
+		SurgeryTreatment treatment = treatmentFactory.createSurgeryTreatment();
+		treatment.setTreatmentId(tid);
+		treatment.setDiagnosis(diagnosis);
+		treatment.setSurgeryDate(date);
+		treatment.setDischargeInstructions(dischargeInstructions);
+		// Why don't they have this above?
+		// treatment.setPatient(patient);
+		// treatment.setProvider(provider);
+		/*
+		 * NB for follow-up treatments, this may not be the current provider
+		 */
+		provider.addTreatment(treatment);
+		/*
+		 * NB for follow-up treatments, the patient will always be the same
+		 */
+		patient.addTreatment(treatment);
+		/*
+		 * Add to the database.
+		 */
+		treatmentDao.addTreatment(treatment);
+		/*
+		 * Add to parent follow-up treatments, if appropriate
+		 */
+		if (consumer != null) {
+			consumer.accept(treatment);
+		}
+		/*
+		 * Return our own consumer who will add follow-up treatments
+		 */
+		return (followUp) -> {
+			treatment.addFollowupTreatment(followUp);
+		};
 	}
 
 	@Override
 	public Consumer<Treatment> importPhysiotherapy(UUID tid, Patient patient, Provider provider, String diagnosis,
 			List<LocalDate> dates, Consumer<Treatment> consumer) {
-		// TODO finish this
-		return null;
+		// TODOX finish this
+		PhysiotherapyTreatment treatment = treatmentFactory.createPhysiotherapyTreatment();
+		treatment.setTreatmentId(tid);
+		treatment.setDiagnosis(diagnosis);
+		// add all the dates to the treatment
+		for (int i = 0; i < dates.size(); i++) {
+			treatment.addTreatmentDate(dates.get(i));
+		}
+		provider.addTreatment(treatment);
+		patient.addTreatment(treatment);
+		treatmentDao.addTreatment(treatment);
+		if (consumer != null) {
+			consumer.accept(treatment);
+		}
+		return (followUp) -> {
+			treatment.addFollowupTreatment(followUp);
+		};
 	}
 		
 }

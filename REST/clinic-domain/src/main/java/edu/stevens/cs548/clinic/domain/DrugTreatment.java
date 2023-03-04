@@ -1,5 +1,8 @@
 package edu.stevens.cs548.clinic.domain;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -7,7 +10,9 @@ import java.time.LocalDate;
  * Entity implementation class for Entity: DrugTreatment
  * 
  */
-// TODO JPA annotations
+// TODOX JPA annotations
+@Entity
+@Table(name = "DrugTreatment")
 public class DrugTreatment extends Treatment implements Serializable {
 
 	private static final long serialVersionUID = 1L;

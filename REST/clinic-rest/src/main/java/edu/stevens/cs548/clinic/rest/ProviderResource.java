@@ -1,6 +1,12 @@
 package edu.stevens.cs548.clinic.rest;
 
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.Response.Status;
@@ -25,7 +31,8 @@ import edu.stevens.cs548.clinic.service.dto.ProviderDto;
 import edu.stevens.cs548.clinic.service.dto.TreatmentDto;
 import edu.stevens.cs548.clinic.service.dto.util.GsonFactory;
 
-// TODO
+// TODOX
+@Path("/provider")
 public class ProviderResource extends ResourceBase {
 	
 	private final Logger logger = Logger.getLogger(ProviderResource.class.getCanonicalName());
@@ -41,28 +48,36 @@ public class ProviderResource extends ResourceBase {
 	
 	private static final String TREATMENTS = "treatments";
 	
-	// TODO
+	// TODOX
+	@Context
 	private UriInfo uriInfo;
 	
-	// TODO
+	// TODOX
+	@Inject
 	private IPatientService patientService;
 	
-	// TODO
+	// TODOX
+	@Inject
 	private IProviderService providerService;
 	
-	// TODO
+	// TODOX
 	/*
 	 * Return a provider DTO including the list of treatments they are administering.
 	 */
+	@GET
+	@Path("/{id}")
+	@Produces("application/vnd.providers+json")
 	public Response getProvider(@PathParam("id") String id) {
 		try {
 			UUID providerId = UUID.fromString(id);
 			ProviderDto provider = providerService.getProvider(providerId, true);
 			ResponseBuilder responseBuilder = Response.ok(provider);
 			/* 
-			 * TODO Add links for treatments in response headers.
+			 * TODOX Add links for treatments in response headers.
 			 */
-			
+			for (TreatmentDto treatment : provider.getTreatments()) {
+				responseBuilder.link(getTreatmentUri(uriInfo, treatment.getProviderId(), treatment.getId()), TREATMENT);
+			}
 			return responseBuilder.build();
 		} catch (ProviderServiceExn e) {
 			logger.info("Failed to find provider with id "+id);
@@ -73,10 +88,13 @@ public class ProviderResource extends ResourceBase {
 		}
 	}
 	
-	// TODO
+	// TODOX
 	/*
 	 * Return a provider DTO including the list of treatments they are administering.
 	 */
+	@GET
+	@Path("/{id}/{tid}")
+	@Produces("application/vnd.treatments+json")
 	public Response getTreatment(@PathParam("id") String id, @PathParam("tid") String tid) {
 		try {
 			UUID providerId = UUID.fromString(id);
@@ -84,8 +102,10 @@ public class ProviderResource extends ResourceBase {
 			TreatmentDto treatment = providerService.getTreatment(providerId, treatmentId);
 			ResponseBuilder responseBuilder = Response.ok(treatment);
 			/* 
-			 * TODO Add links for patient and provider in response headers.
+			 * TODOX Add links for patient and provider in response headers.
 			 */
+			responseBuilder.link(getPatientUri(uriInfo, treatment.getPatientId()), PATIENT);
+			responseBuilder.link(getProviderUri(uriInfo, treatment.getProviderId()), PROVIDER);
 			
 			return responseBuilder.build();
 		} catch (ProviderServiceExn e) {
@@ -109,6 +129,7 @@ public class ProviderResource extends ResourceBase {
 	 *    "treatments" : [ treatment1, ...., treatmentn ]
 	 * }
 	 */
+	@POST
 	public Response upload(InputStream is) {
 		try (JsonReader rd = gson.newJsonReader(new BufferedReader(new InputStreamReader(is)))) {
 			
@@ -152,9 +173,20 @@ public class ProviderResource extends ResourceBase {
 			rd.endArray();
 			
 			/*
-			 * TODO read stream of treatments and add to database
+			 * TODOX read stream of treatments and add to database
 			 */
-
+			label = rd.nextName();
+			if (!TREATMENTS.equals(label)) {
+				logger.log(Level.SEVERE, String.format("Unexpected label, expected %s, found %s",  TREATMENTS, label));
+				return Response.status(Status.BAD_REQUEST).build();
+			}
+			rd.beginArray();
+			while (rd.hasNext()) {
+				TreatmentDto treatment = gson.fromJson(rd, TreatmentDto.class);
+				logger.info("......uploading treatment "+treatment.getId());
+				providerService.addTreatment(treatment);
+			}
+			rd.endArray();
 			
 			rd.endObject();
 			

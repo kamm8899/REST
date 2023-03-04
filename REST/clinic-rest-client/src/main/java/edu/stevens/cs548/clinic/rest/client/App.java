@@ -32,8 +32,11 @@ import edu.stevens.cs548.clinic.rest.client.stub.WebClient;
 import edu.stevens.cs548.clinic.service.dto.DrugTreatmentDto;
 import edu.stevens.cs548.clinic.service.dto.PatientDto;
 import edu.stevens.cs548.clinic.service.dto.PatientDtoFactory;
+import edu.stevens.cs548.clinic.service.dto.PhysiotherapyTreatmentDto;
 import edu.stevens.cs548.clinic.service.dto.ProviderDto;
 import edu.stevens.cs548.clinic.service.dto.ProviderDtoFactory;
+import edu.stevens.cs548.clinic.service.dto.RadiologyTreatmentDto;
+import edu.stevens.cs548.clinic.service.dto.SurgeryTreatmentDto;
 import edu.stevens.cs548.clinic.service.dto.TreatmentDto;
 import edu.stevens.cs548.clinic.service.dto.TreatmentDtoFactory;
 import edu.stevens.cs548.clinic.service.dto.util.GsonFactory;
@@ -262,8 +265,17 @@ public class App {
 		rd.endArray();
 
 		/*
-		 * TODO Load the treatment information
+		 * TODOX Load the treatment information
 		 */
+		if (!TREATMENTS.equals(rd.nextName())) {
+			throw new ParseException("Expected field: " + TREATMENTS, 0);
+		}
+		rd.beginArray();
+		while (rd.hasNext()) {
+			TreatmentDto treatment = gson.fromJson(rd, TreatmentDto.class);
+			treatments.add(treatment);
+		}
+		rd.endArray();
 
 
 		rd.endObject();
@@ -300,9 +312,14 @@ public class App {
 			wr.endArray();
 
 			/*
-			 * TODO Save the treatment information.
+			 * TODOX Save the treatment information.
 			 */
-
+			wr.name(TREATMENTS);
+			wr.beginArray();
+			for (TreatmentDto t : treatments) {
+				gson.toJson(t, TreatmentDto.class, wr);
+			}
+			wr.endArray();
 
 			wr.endObject();
 		}
@@ -351,8 +368,15 @@ public class App {
 		TreatmentDto treatment = null;
 		if ("D".equals(line)) {
 			treatment = addDrugTreatment();
+		} 
+		// TODOX add other cases
+		else if ("S".equals(line)) {
+			treatment = addSurgeryTreatment();
+		} else if ("R".equals(line)) {
+			treatment = addRadiologyTreatment();
+		} else if ("P".equals(line)) {
+			treatment = addPhysiotherapyTreatment();
 		}
-		// TODO add other cases
 		
 		if (treatment != null) {
 			msgln("Adding follow-up treatments...");
@@ -381,6 +405,85 @@ public class App {
 		msg("Frequency: ");
 		treatment.setFrequency(Integer.parseInt(in.readLine()));
 
+		return treatment;
+	}
+	
+
+	private SurgeryTreatmentDto addSurgeryTreatment() throws IOException, ParseException {
+		SurgeryTreatmentDto treatment = treatmentFactory.createSurgeryTreatmentDto();
+
+		treatment.setId(UUID.randomUUID());
+		msg("Patient ID: ");
+		treatment.setPatientId(UUID.fromString(in.readLine()));
+		msg("Provider ID: ");
+		treatment.setProviderId(UUID.fromString(in.readLine()));
+		msg("Diagnosis: ");
+		treatment.setDiagnosis(in.readLine());
+	
+		treatment.setSurgeryDate(readDate("Surgery Date"));
+		msg("Discharge Instructions: ");
+		treatment.setDischargeInstructions(in.readLine());
+
+		return treatment;
+	}
+	
+	private RadiologyTreatmentDto addRadiologyTreatment() throws IOException, ParseException {
+		RadiologyTreatmentDto treatment = treatmentFactory.createRadiologyTreatmentDto();
+
+		treatment.setId(UUID.randomUUID());
+		msg("Patient ID: ");
+		treatment.setPatientId(UUID.fromString(in.readLine()));
+		msg("Provider ID: ");
+		treatment.setProviderId(UUID.fromString(in.readLine()));
+		msg("Diagnosis: ");
+		treatment.setDiagnosis(in.readLine());
+		
+		//TODOX how do we know when we stop reading in treatment dates
+		msg("Enter treatment dates: (q to quit)\n");
+		// Take in the treatment dates until the user enters "quit"
+		List<LocalDate> treatDates = new ArrayList<>();
+		String date;
+		do {
+			msg("Treatment Date :");
+			date = in.readLine();
+			// if they dont say quit then try to add this date to list of treatment dates
+			if (!date.equals("q")) {
+				treatDates.add(LocalDate.parse(date, dateFormatter));
+			}
+
+		} while (!date.equals("q"));
+		treatment.setTreatmentDates(treatDates);
+		
+		return treatment;
+	}
+	
+	private PhysiotherapyTreatmentDto addPhysiotherapyTreatment() throws IOException, ParseException {
+		PhysiotherapyTreatmentDto treatment = treatmentFactory.createPhysiotherapyTreatmentDto();
+
+		treatment.setId(UUID.randomUUID());
+		msg("Patient ID: ");
+		treatment.setPatientId(UUID.fromString(in.readLine()));
+		msg("Provider ID: ");
+		treatment.setProviderId(UUID.fromString(in.readLine()));
+		msg("Diagnosis: ");
+		treatment.setDiagnosis(in.readLine());
+		
+		//TODOX how do we know when we stop reading in treatment dates
+		msg("Enter treatment dates: (q to quit)\n");
+		// Take in the treatment dates until the user enters "quit"
+		List<LocalDate> treatDates = new ArrayList<>();
+		String date;
+		do {
+			msg("Treatment Date :");
+			date = in.readLine();
+			// if they dont say quit then try to add this date to list of treatment dates
+			if (!date.equals("q")) {
+				treatDates.add(LocalDate.parse(date, dateFormatter));
+			}
+
+		} while (!date.equals("q"));
+		treatment.setTreatmentDates(treatDates);
+		
 		return treatment;
 	}
 
@@ -445,8 +548,17 @@ public class App {
 					wr.endArray();
 
 					/*
-					 * TODO Upload the treatment information.
+					 * TODOX Upload the treatment information.
 					 */
+					logger.info("...uploading treatment records...");
+					wr.name(TREATMENTS);
+					wr.beginArray();
+					for (TreatmentDto treatment : treatments) {
+						logger.info("......uploading treatment "+treatment.getId());
+						gson.toJson(treatment, TreatmentDto.class, wr);
+					}
+					wr.endArray();
+
 
 
 					wr.endObject();

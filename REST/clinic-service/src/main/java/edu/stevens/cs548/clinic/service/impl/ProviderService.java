@@ -20,15 +20,17 @@ import edu.stevens.cs548.clinic.domain.Treatment;
 import edu.stevens.cs548.clinic.service.IPatientService.PatientNotFoundExn;
 import edu.stevens.cs548.clinic.service.IPatientService.PatientServiceExn;
 import edu.stevens.cs548.clinic.service.IProviderService;
-import edu.stevens.cs548.clinic.service.dto.DrugTreatmentDto;
-import edu.stevens.cs548.clinic.service.dto.ProviderDto;
-import edu.stevens.cs548.clinic.service.dto.ProviderDtoFactory;
-import edu.stevens.cs548.clinic.service.dto.TreatmentDto;
+import edu.stevens.cs548.clinic.service.dto.*;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 /**
  * CDI Bean implementation class ProviderService
  */
-// TODO
+// TODOX
+@RequestScoped
+@Transactional
 public class ProviderService implements IProviderService {
 
 	@SuppressWarnings("unused")
@@ -45,10 +47,12 @@ public class ProviderService implements IProviderService {
 		providerDtoFactory = new ProviderDtoFactory();
 	}
 	
-	// TODO
+	// TODOX
+	@Inject
 	private IProviderDao providerDao;
 
-	// TODO
+	// TODOX
+	@Inject
 	private IPatientDao patientDao;
 
 
@@ -96,8 +100,16 @@ public class ProviderService implements IProviderService {
 	 * The boolean flag indicates if related treatments should be loaded eagerly.
 	 */
 	public ProviderDto getProvider(UUID id, boolean includeTreatments) throws ProviderServiceExn {
-		// TODO use DAO to get Provider by external key
-		return null;
+		// TODOX use DAO to get Provider by external key
+		ProviderDto o = null;
+		try {
+			o =  providerToDto(providerDao.getProvider(id, includeTreatments), includeTreatments);
+		} catch (TreatmentExn e) {			
+			e.printStackTrace();
+		} catch (ProviderExn e) {
+			e.printStackTrace();
+		}
+		return o;
 	}
 	
 	@Override
@@ -128,7 +140,7 @@ public class ProviderService implements IProviderService {
 			if (dto.getId() == null) {
 				dto.setId(UUID.randomUUID());
 			}
-			
+
 			Provider provider = providerDao.getProvider(dto.getProviderId());
 			Patient patient = patientDao.getPatient(dto.getPatientId());
 
@@ -141,27 +153,40 @@ public class ProviderService implements IProviderService {
 						drugTreatmentDto.getDrug(), drugTreatmentDto.getDosage(), drugTreatmentDto.getStartDate(),
 						drugTreatmentDto.getEndDate(), drugTreatmentDto.getFrequency(), parentFollowUps);
 
-			} else {
-				/*
-				 * TODO Handle the other cases
-				 */
-
-
-					throw new IllegalArgumentException("No treatment-specific info provided.");
-				
 			}
+			/*
+			 * TODOX Handle the other cases
+			 */
 
-			for (TreatmentDto followUp : dto.getFollowupTreatments()) {
-				addTreatmentImpl(followUp, followUpsConsumer);
-			}
+		else if (dto instanceof SurgeryTreatmentDto) {
+			SurgeryTreatmentDto surgTreatDto = (SurgeryTreatmentDto) dto;
+			followUpsConsumer = provider.importSurgery(dto.getId(), patient, provider, dto.getDiagnosis(),
+					surgTreatDto.getSurgeryDate(), surgTreatDto.getDischargeInstructions(), parentFollowUps);
+		} else if (dto instanceof RadiologyTreatmentDto) {
+			RadiologyTreatmentDto radDto = (RadiologyTreatmentDto) dto;
+			followUpsConsumer = provider.importRadiology(dto.getId(), patient, provider, dto.getDiagnosis(), radDto.getTreatmentDates(),
+					parentFollowUps);
+		} else if (dto instanceof PhysiotherapyTreatmentDto) {
+			PhysiotherapyTreatmentDto physDto = (PhysiotherapyTreatmentDto) dto;
+			followUpsConsumer = provider.importPhysiotherapy(dto.getId(), patient, provider, dto.getDiagnosis(), physDto.getTreatmentDates(),
+					parentFollowUps);
+		} else {
 
-		} catch (PatientExn e) {
+
+			throw new IllegalArgumentException("No treatment-specific info provided.");
+
+		}
+
+		for (TreatmentDto followUp : dto.getFollowupTreatments()) {
+			addTreatmentImpl(followUp, followUpsConsumer);
+		}
+
+	    }catch (PatientExn e) {
 			throw new PatientNotFoundExn("Could not find patient for " + dto.getPatientId(), e);
 
 		} catch (ProviderExn e) {
 			throw new ProviderNotFoundExn("Could not find provider for " + dto.getProviderId(), e);
-		}
-	}
+	}}
 	
 	@Override
 	public void addTreatment(TreatmentDto dto) throws PatientServiceExn, ProviderServiceExn {

@@ -2,6 +2,7 @@ package edu.stevens.cs548.clinic.webapp.provider;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.util.List;
 
@@ -16,7 +17,8 @@ public class ProvidersBacking extends BaseBacking {
 
 	private static final long serialVersionUID = -733113325524128462L;
 	
-	// TODO
+	// TODOX
+	@Inject
 	IProviderService providerService;
 
 	/*
@@ -28,7 +30,7 @@ public class ProvidersBacking extends BaseBacking {
 		return providers;
 	}
 
-	// TODO
+	// TODOX
 	@PostConstruct
 	private void load() {
 		try {

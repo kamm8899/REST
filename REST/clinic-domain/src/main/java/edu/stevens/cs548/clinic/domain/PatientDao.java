@@ -1,20 +1,29 @@
 package edu.stevens.cs548.clinic.domain;
 
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-// TODO
+// TODOX
+@RequestScoped
+@Transactional
 public class PatientDao implements IPatientDao {
 	
 
-	// TODO
+	// TODOX
+	@Inject
+	@ClinicDomainProducer.ClinicDomain
 	private EntityManager em;
 	
-	// TODO
+	// TODOX
+	@Inject
 	private ITreatmentDao treatmentDao;
 
 
