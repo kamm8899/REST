@@ -70,8 +70,8 @@ public class InitBean {
 		 * Put your testing logic here. Use the logger to display testing output in the
 		 * server logs.
 		 */
-		logger.info("Your name here: ");
-		System.err.println("Your name here!");
+		logger.info("Jessica Kamman: ");
+		System.err.println("Jessica Kamman");
 
 		try {
 

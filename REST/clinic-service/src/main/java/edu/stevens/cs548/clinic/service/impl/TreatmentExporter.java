@@ -69,6 +69,10 @@ public class TreatmentExporter implements ITreatmentExporter<TreatmentDto> {
 		dto.setDiagnosis(diagnosis);
 		dto.setTreatmentDates(dates);
 
+		if (includeFollowups) {
+			dto.setFollowupTreatments(followups.get());
+		}
+
 		
 		return dto;
 	}
@@ -88,6 +92,9 @@ public class TreatmentExporter implements ITreatmentExporter<TreatmentDto> {
 		dto.setSurgeryDate(date);
 		dto.setDischargeInstructions(dischargeInstructions);
 
+		if (includeFollowups) {
+			dto.setFollowupTreatments(followups.get());
+		}
 		
 		return dto;
 	}
@@ -104,6 +111,10 @@ public class TreatmentExporter implements ITreatmentExporter<TreatmentDto> {
 		dto.setProviderName(providerName);
 		dto.setDiagnosis(diagnosis);
 		dto.setTreatmentDates(dates);
+
+		if (includeFollowups) {
+			dto.setFollowupTreatments(followups.get());
+		}
 		
 		return dto;
 		}

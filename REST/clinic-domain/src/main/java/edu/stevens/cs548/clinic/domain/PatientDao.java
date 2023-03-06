@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
+import edu.stevens.cs548.clinic.domain.ClinicDomainProducer.ClinicDomain;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +20,7 @@ public class PatientDao implements IPatientDao {
 
 	// TODOX
 	@Inject
-	@ClinicDomainProducer.ClinicDomain
+	@ClinicDomain
 	private EntityManager em;
 	
 	// TODOX

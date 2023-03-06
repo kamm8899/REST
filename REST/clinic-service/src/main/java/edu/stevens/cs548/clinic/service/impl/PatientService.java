@@ -17,12 +17,16 @@ import edu.stevens.cs548.clinic.service.IPatientService;
 import edu.stevens.cs548.clinic.service.dto.PatientDto;
 import edu.stevens.cs548.clinic.service.dto.PatientDtoFactory;
 import edu.stevens.cs548.clinic.service.dto.TreatmentDto;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 
 /**
  * CDI Bean implementation class PatientService
  */
+@RequestScoped
+@Transactional
 public class PatientService implements IPatientService {
 	
 	@SuppressWarnings("unused")

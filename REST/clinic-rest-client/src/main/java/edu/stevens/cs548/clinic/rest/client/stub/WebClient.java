@@ -2,6 +2,7 @@ package edu.stevens.cs548.clinic.rest.client.stub;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.logging.Logger;
 
@@ -14,6 +15,7 @@ import okhttp3.RequestBody;
 import okio.BufferedSink;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class WebClient {
 	
@@ -41,13 +43,24 @@ public class WebClient {
         /*
          * TODO Wrap the okhttp client with a retrofit stub factory.
          */
-        Retrofit retrofit = null;
+        Retrofit retrofit = new Retrofit.Builder().
+                baseUrl(baseUri.toString()).
+                addConverterFactory(GsonConverterFactory.create(gson)).
+                client(httpClient).
+                build();
+
+            /*
+             * Create the stub that will be used for Web service calls
+             */
+            client = retrofit.create(IServerApi.class);
+
+        }
         
         /*
          * Create the stub that will be used for Web service calls
          */
-        client = retrofit.create(IServerApi.class);
- 	}
+       //client = retrofit.create(IServerApi.class);
+
 
 	public void upload(final IStreamingOutput output) throws IOException {
         /*

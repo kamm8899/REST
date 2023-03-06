@@ -93,7 +93,7 @@ public class ProviderResource extends ResourceBase {
 	 * Return a provider DTO including the list of treatments they are administering.
 	 */
 	@GET
-	@Path("/{id}/{tid}")
+	@Path("/{id}/treatment/{tid}")
 	@Produces("application/vnd.treatments+json")
 	public Response getTreatment(@PathParam("id") String id, @PathParam("tid") String tid) {
 		try {

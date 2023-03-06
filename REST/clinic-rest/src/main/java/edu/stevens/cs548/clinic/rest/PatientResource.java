@@ -1,6 +1,7 @@
 package edu.stevens.cs548.clinic.rest;
 
 
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -21,6 +22,7 @@ import edu.stevens.cs548.clinic.service.dto.PatientDto;
 import edu.stevens.cs548.clinic.service.dto.TreatmentDto;
 
 // TODOX
+@RequestScoped
 @Path("/patient")
 public class PatientResource extends ResourceBase {
 	
